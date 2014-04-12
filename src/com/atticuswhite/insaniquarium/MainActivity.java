@@ -40,6 +40,7 @@ import com.atticuswhite.insaniquarium.controlarea.ControlTouchArea;
 import com.atticuswhite.insaniquarium.controlarea.ScoreManager;
 import com.atticuswhite.insaniquarium.entities.Coin;
 import com.atticuswhite.insaniquarium.entities.Fish;
+import com.atticuswhite.insaniquarium.entities.Food;
 import com.atticuswhite.insaniquarium.entities.Monster;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -81,6 +82,7 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private List<Coin> coins = new ArrayList<Coin>();
 	private List<Fish> fishies = new ArrayList<Fish>();
 	private List<Monster> monsters = new ArrayList<Monster>();
+	private List<Food> munchies = new ArrayList<Food>();
 	
 	private PhysicsWorld mPhysicsWorld;
 	
@@ -190,23 +192,24 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 				currentTime = System.currentTimeMillis();
 				
 				
-				
+				// COIN BOUNDARIES
 				Iterator<Coin> coinIter = coins.iterator();
 				while(coinIter.hasNext()){
 					Coin coin = coinIter.next();
 					if (coin.outOfBounds()){
-						Log.v("COIN", "Out of bounds, removing");
 						mScene.getChildByIndex(LAYER_CONTROLS).detachChild(coin);
 						coinIter.remove();
 					}
 				}
 				
+				// DROP COIN
 				if (lastCoin == null || ( (currentTime / 1000) - (lastCoin / 1000)) > 5){
 					lastCoin = currentTime;
 					float pX = (float) ((Math.random() * (CAMERA_WIDTH - 10f) + 10f));
 					addCoin(pX);
 				}
 				
+				// HUNGRY MONSTERS
 				Iterator<Fish> fishIter;
 				for(Monster monster : monsters){
 					fishIter = fishies.iterator();
@@ -219,8 +222,6 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 							monster.setTarget(null);
 						}
 					}
-					
-					
 					
 					if (!monster.hasTarget()){
 						Fish target = null;
@@ -242,6 +243,7 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 					
 				}
 				
+				// MONSTER FATALITIES
 				Iterator<Monster> monsterIter = monsters.iterator();
 				while(monsterIter.hasNext()){
 					Monster monster = monsterIter.next();
@@ -251,14 +253,31 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 					}
 				}
 				
-				
-				/*
-				if (fish.collidesWith(ground)){
-					ground.setColor(1f, 0f, 0f);
-				} else {
-					//ground.setColor(0, 1, 0f);
+				// FISHIES HUNGRY
+				float foodRange = 100.0f;
+				for(Fish fish : fishies){
+					if (!fish.hasTarget()){
+						for (Food food : munchies){
+							
+							float dX = Math.abs(fish.getX() - food.getX());
+							float dY = Math.abs(fish.getY() - food.getY());
+							
+							if (dX < foodRange && dY < foodRange){
+								fish.setTarget(food);
+							}
+							
+						}
+					} else {
+						if (fish.getTarget().collidesWith(fish)){
+							munchies.remove(fish.getTarget());
+							mScene.getChildByIndex(LAYER_FISH).detachChild(fish.getTarget());
+							fish.removeTarget();
+						}
+					}
 				}
-				*/
+				
+				
+				
 			}
 
 			@Override
@@ -273,8 +292,7 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		if (this.mPhysicsWorld != null){
 			if (pSceneTouchEvent.isActionDown()){
-				//this.addFace(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
-				//this.addCoin(pSceneTouchEvent.getX());
+				this.addFood(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 				return true;
 			}
 		}
@@ -299,7 +317,6 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 			} else if (pTouchArea instanceof Monster){
 				((Monster) pTouchArea).handleTouch();
 			}
-			//this.removeFace((AnimatedSprite) pTouchArea);
 			return true;
 		}
 		return false;
@@ -320,11 +337,11 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		this.mScoreManager.updateScore(coin.getValue());
 	}
 	
-	public void addMonster(Fish target){
+	private void addMonster(Fish target){
 		final float pX = 100f;
 		final float pY = 200f;
 		
-		final Monster monster = new Monster(pX, pY, this.mTriangleFaceTextureRegion, this.getVertexBufferObjectManager());
+		final Monster monster = new Monster(pX, pY, this.mGameFonts, this.mTriangleFaceTextureRegion, this.getVertexBufferObjectManager());
 		monster.setTarget(target);
 		
 		this.monsters.add(monster);
@@ -332,6 +349,11 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		this.mScene.getChildByIndex(LAYER_FISH).attachChild(monster);
 	}
 	
+	private void addFood(float pX, float pY){
+		final Food food = new Food(pX, pY, this.mGameFonts, this.mHexagonFaceTextureRegion, this.getVertexBufferObjectManager());
+		munchies.add(food);
+		this.mScene.getChildByIndex(LAYER_FISH).attachChild(food);
+	}
 	
 
 
@@ -360,7 +382,6 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		
 		Fish fish = new Fish(pX, pY, this.mBoxFaceTextureRegion, this.getVertexBufferObjectManager());
 		fish.setDirection(direction);
-		fish.animate(200);
 		this.fishies.add(fish);
 		this.mScene.registerTouchArea(fish);
 		this.mScene.getChildByIndex(LAYER_FISH).attachChild(fish);
