@@ -8,6 +8,7 @@ import org.andengine.opengl.font.Font;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.atticuswhite.insaniquarium.GameEventManager;
+import com.atticuswhite.insaniquarium.GameFonts;
 
 public class ControlAreaSection extends Entity {
 	static final float WIDTH = 100.0f;
@@ -16,24 +17,29 @@ public class ControlAreaSection extends Entity {
 	
 	
 	private final VertexBufferObjectManager mVertexBufferObjectManager;
-	private final Font font;
 	private final String name;
 	private final GameEventManager mGameEventManager;
 	
 	private final ControlTouchArea background;
-	private final Text title;
 	
 	
-	public ControlAreaSection (String name, float pX, GameEventManager gameEventManager, Font font, VertexBufferObjectManager mVertexBufferObjectManager){
+	
+	public ControlAreaSection (String name, float pX, GameEventManager gameEventManager, GameFonts font, VertexBufferObjectManager mVertexBufferObjectManager){
 		this.mVertexBufferObjectManager = mVertexBufferObjectManager;
-		this.font = font;
 		this.name = name;
 		this.mGameEventManager = gameEventManager;
 		
 		
 		this.background = new ControlTouchArea(this, 0, 0, WIDTH, HEIGHT, mVertexBufferObjectManager);
-		this.title = new Text(10, 5, font, name, name.length(), mVertexBufferObjectManager);
-		this.title.setColor(0,0,0);
+		Text title = new Text(10, 5, font.getMediumFont(), name, name.length(), mVertexBufferObjectManager);
+		title.setColor(0,0,0);
+		
+		String costText = "$50";
+		Text cost = new Text(35, 50, font.getSmallFont(), costText, costText.length(), mVertexBufferObjectManager);
+		cost.setColor(0, 0, 0);
+		
+		
+		
 		
 		
 		
@@ -41,6 +47,7 @@ public class ControlAreaSection extends Entity {
 		
 		this.attachChild(background);
 		this.attachChild(title);
+		this.attachChild(cost);
 	}
 	
 	public ControlTouchArea getTouchArea(){

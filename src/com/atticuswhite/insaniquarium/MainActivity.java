@@ -38,6 +38,9 @@ import com.atticuswhite.insaniquarium.controlarea.ControlArea;
 import com.atticuswhite.insaniquarium.controlarea.ControlAreaSection;
 import com.atticuswhite.insaniquarium.controlarea.ControlTouchArea;
 import com.atticuswhite.insaniquarium.controlarea.ScoreManager;
+import com.atticuswhite.insaniquarium.entities.Coin;
+import com.atticuswhite.insaniquarium.entities.Fish;
+import com.atticuswhite.insaniquarium.entities.Monster;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
@@ -70,11 +73,14 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private TiledTextureRegion mBoxFaceTextureRegion;
 	private TiledTextureRegion mCircleFaceTextureRegion;
+	private TiledTextureRegion mTriangleFaceTextureRegion;
+	private TiledTextureRegion mHexagonFaceTextureRegion;
 	
-	
+	/* Sprite Groups */
 	private List<AnimatedSprite> spriteGroup = new ArrayList<AnimatedSprite>();
 	private List<Coin> coins = new ArrayList<Coin>();
 	private List<Fish> fishies = new ArrayList<Fish>();
+	private List<Monster> monsters = new ArrayList<Monster>();
 	
 	private PhysicsWorld mPhysicsWorld;
 	
@@ -83,7 +89,7 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private long currentTime;
 	private Long lastCoin;
 	
-	private Font mFont;
+	private GameFonts mGameFonts;
 	private ControlArea mControlArea;
 	private ScoreManager mScoreManager;
 	private GameEventManager mGameEventManager;
@@ -99,16 +105,15 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 
 	@Override
 	protected void onCreateResources() {
-		
-		FontFactory.setAssetBasePath("font/");
-		this.mFont = FontFactory.createFromAsset(this.getFontManager(), this.getTextureManager(), 512, 512, TextureOptions.BILINEAR, this.getAssets(), "Droid.ttf", 32, true, Color.WHITE);
-		this.mFont.load();
+		this.mGameFonts = new GameFonts(this);
 		
 		
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 64, 128, TextureOptions.BILINEAR);
 		this.mBoxFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "face_box_tiled.png", 0, 0, 2, 1);
 		this.mCircleFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "face_circle_tiled.png", 0, 32, 2, 1);
+		this.mTriangleFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "face_triangle_tiled.png", 0, 64, 2, 1); // 64x32
+		this.mHexagonFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "face_hexagon_tiled.png", 0, 96, 2, 1); // 64x32
 		
 		this.mBitmapTextureAtlas.load();
 	}
@@ -134,9 +139,9 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		this.mGameEventManager.addListener(this);
 		
 		/* Control Area */
-		this.mControlArea = new ControlArea(this.mGameEventManager, this.mFont, this.getVertexBufferObjectManager());
+		this.mControlArea = new ControlArea(this.mGameEventManager, this.mGameFonts, this.getVertexBufferObjectManager());
 		
-		this.mScoreManager = new ScoreManager(this.mFont, this.getVertexBufferObjectManager());
+		this.mScoreManager = new ScoreManager(this.mGameFonts, this.getVertexBufferObjectManager());
 		this.mControlArea.attachChild(this.mScoreManager.getEntity());
 		this.mControlArea.registerTouchAreas(this.mScene);
 		this.mScene.getChildByIndex(LAYER_CONTROLS).attachChild(this.mControlArea);
@@ -202,6 +207,50 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 					addCoin(pX);
 				}
 				
+				Iterator<Fish> fishIter;
+				for(Monster monster : monsters){
+					fishIter = fishies.iterator();
+					
+					while(fishIter.hasNext()){
+						Fish fish = fishIter.next();
+						if (monster.collidesWith(fish)){
+							fishIter.remove();
+							mScene.getChildByIndex(LAYER_FISH).detachChild(fish);
+							monster.setTarget(null);
+						}
+					}
+					
+					
+					
+					if (!monster.hasTarget()){
+						Fish target = null;
+						Float pX = null;
+						Float pY = null;
+					
+						for (Fish fish : fishies){
+							float dX = Math.abs(monster.getX() - fish.getX());
+							float dY = Math.abs(monster.getY() - fish.getY());
+							
+							if (pX == null || pY == null || (dX < pX && dY < pY)){
+								pX = dX;
+								pY = dY;
+								target = fish;
+							}
+						}
+						monster.setTarget(target);
+					}
+					
+				}
+				
+				Iterator<Monster> monsterIter = monsters.iterator();
+				while(monsterIter.hasNext()){
+					Monster monster = monsterIter.next();
+					if (monster.isDead()){
+						monsterIter.remove();
+						mScene.getChildByIndex(LAYER_FISH).detachChild(monster);
+					}
+				}
+				
 				
 				/*
 				if (fish.collidesWith(ground)){
@@ -244,6 +293,11 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 			} else if (pTouchArea instanceof ControlTouchArea){
 				Log.v("ControlAreaSection", "Touched");
 				((ControlAreaSection)((ControlTouchArea) pTouchArea ).getParent()).touchedArea();
+			} else if (pTouchArea instanceof Fish){
+				Log.v("Monster", "Creating monster");
+				this.addMonster((Fish) pTouchArea);
+			} else if (pTouchArea instanceof Monster){
+				((Monster) pTouchArea).handleTouch();
 			}
 			//this.removeFace((AnimatedSprite) pTouchArea);
 			return true;
@@ -257,13 +311,25 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		final Coin coin = new Coin(pX, pY, this.mCircleFaceTextureRegion, this.getVertexBufferObjectManager());
 		this.coins.add(coin);
 		this.mScene.registerTouchArea(coin);
-		this.mScene.getChildByIndex(LAYER_CONTROLS).attachChild(coin);
+		this.mScene.getChildByIndex(LAYER_FISH).attachChild(coin);
 	}
 	
 	private void eatCoin(Coin coin){
 		this.mScene.unregisterTouchArea(coin);
-		this.mScene.getChildByIndex(LAYER_CONTROLS).detachChild(coin);
+		this.mScene.getChildByIndex(LAYER_FISH).detachChild(coin);
 		this.mScoreManager.updateScore(coin.getValue());
+	}
+	
+	public void addMonster(Fish target){
+		final float pX = 100f;
+		final float pY = 200f;
+		
+		final Monster monster = new Monster(pX, pY, this.mTriangleFaceTextureRegion, this.getVertexBufferObjectManager());
+		monster.setTarget(target);
+		
+		this.monsters.add(monster);
+		this.mScene.registerTouchArea(monster);
+		this.mScene.getChildByIndex(LAYER_FISH).attachChild(monster);
 	}
 	
 	
@@ -274,7 +340,7 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		switch(event){
 			case CREATE_FISH:
 				Log.v("FISH", "CREATE FISH");
-				if (this.mScoreManager.getScore() - Fish.COST > 0){
+				if (this.mScoreManager.getScore() - Fish.COST >= 0){
 					this.addFish();
 				}
 				break;
@@ -297,7 +363,7 @@ public class MainActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		fish.animate(200);
 		this.fishies.add(fish);
 		this.mScene.registerTouchArea(fish);
-		this.mScene.attachChild(fish);
+		this.mScene.getChildByIndex(LAYER_FISH).attachChild(fish);
 		
 		this.mScoreManager.updateScore( -Fish.COST );
 	}

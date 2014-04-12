@@ -1,9 +1,11 @@
-package com.atticuswhite.insaniquarium;
+package com.atticuswhite.insaniquarium.entities;
 
 import org.andengine.engine.handler.physics.PhysicsHandler;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+
+import com.atticuswhite.insaniquarium.MainActivity;
 
 public class Coin extends AnimatedSprite {
 	private final PhysicsHandler mPhysicsHandler;

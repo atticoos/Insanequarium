@@ -8,6 +8,7 @@ import org.andengine.opengl.font.Font;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.atticuswhite.insaniquarium.GameEventManager;
+import com.atticuswhite.insaniquarium.GameFonts;
 import com.atticuswhite.insaniquarium.MainActivity;
 
 public class ControlArea extends Entity {
@@ -16,7 +17,7 @@ public class ControlArea extends Entity {
 	final private ControlAreaSection scoreSection;
 	
 	
-	public ControlArea(GameEventManager gameEventManager, final Font font, final VertexBufferObjectManager mVertexBufferObjectManager ){
+	public ControlArea(GameEventManager gameEventManager, final GameFonts font, final VertexBufferObjectManager mVertexBufferObjectManager ){
 		this.mVertexBufferObjectManager = mVertexBufferObjectManager;
 		
 		final Rectangle scoreBackground = new Rectangle(0, 0, MainActivity.CAMERA_WIDTH, 100, mVertexBufferObjectManager);
