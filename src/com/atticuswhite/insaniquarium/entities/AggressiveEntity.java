@@ -1,29 +1,22 @@
 package com.atticuswhite.insaniquarium.entities;
 
 import org.andengine.engine.handler.physics.PhysicsHandler;
-import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.atticuswhite.insaniquarium.MainActivity;
 
-public class Fish extends GameEntity {
-	public static final int COST = 50;
+public class AggressiveEntity extends GameEntity {
 	
+	protected boolean updateHandlerEnabled;
+	protected GameEntity target;
 	
-	private Food target;
-	private boolean updateHandlerEnabled;
-	
-	
-
-	public Fish(final float pX, final float pY, final TiledTextureRegion pTextureRegion, final VertexBufferObjectManager pVertexBufferObjectManager){
+	public AggressiveEntity(final float pX, final float pY, final TiledTextureRegion pTextureRegion, final VertexBufferObjectManager pVertexBufferObjectManager){
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager);
-		this.velocityX = 100.0f;
-		this.velocityY = 15.0f;
-		this.mPhysicsHandler.setVelocity(this.velocityX, this.velocityY);
+		this.updateHandlerEnabled = true;
 	}
 	
-	public void setTarget( Food target ){
+	public void setTarget( GameEntity target ){
 		this.target = target;
 		if (this.hasTarget()){
 			this.unregisterUpdateHandler(this.mPhysicsHandler);
@@ -35,22 +28,17 @@ public class Fish extends GameEntity {
 		return this.target != null;
 	}
 	
-	public Food getTarget(){
+	public GameEntity getTarget(){
 		return this.target;
 	}
 	
 	public void removeTarget(){
 		this.target = null;
+		this.registerUpdateHandler(this.mPhysicsHandler);
+		this.updateHandlerEnabled = true;
 	}
 	
-	public void setDirection( boolean dir){
-		if (dir){
-			this.mPhysicsHandler.setVelocityX(this.velocityX);
-		} else {
-			this.mPhysicsHandler.setVelocityX(-this.velocityX);
-		}
-	}
-	
+
 	protected void onManagedUpdate(final float pSecondsElapsed){
 		
 		if (!this.hasTarget()){
