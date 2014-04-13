@@ -9,23 +9,24 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.atticuswhite.insaniquarium.GameEventManager;
 import com.atticuswhite.insaniquarium.GameFonts;
-import com.atticuswhite.insaniquarium.MainActivity;
+import com.atticuswhite.insaniquarium.GameActivity;
 
 public class ControlArea extends Entity {
-	private final VertexBufferObjectManager mVertexBufferObjectManager;
 	final private ControlAreaSection fishSection;
 	final private ControlAreaSection scoreSection;
 	
 	
-	public ControlArea(GameEventManager gameEventManager, final GameFonts font, final VertexBufferObjectManager mVertexBufferObjectManager ){
-		this.mVertexBufferObjectManager = mVertexBufferObjectManager;
+	public ControlArea(GameEventManager gameEventManager){
+		VertexBufferObjectManager mVertexBufferObjectManager = GameActivity.getInstance().getVertexBufferObjectManager();
+		GameFonts font = GameActivity.getInstance().getGameFonts();
 		
-		final Rectangle scoreBackground = new Rectangle(0, 0, MainActivity.CAMERA_WIDTH, 100, mVertexBufferObjectManager);
+		
+		final Rectangle scoreBackground = new Rectangle(0, 0, GameActivity.CAMERA_WIDTH, 100, mVertexBufferObjectManager);
 		scoreBackground.setColor(0, 0, 0);
 		
 		this.attachChild(scoreBackground);
 		
-		fishSection = new ControlAreaSection("Fish", 10, gameEventManager, font, mVertexBufferObjectManager);
+		fishSection = new ControlAreaSection("Fish", 10, gameEventManager);
 		scoreSection = null; //new ControlAreaSection("Score", mVertexBufferObjectManager);
 		
 		

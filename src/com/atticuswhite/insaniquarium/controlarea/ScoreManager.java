@@ -6,19 +6,14 @@ import org.andengine.opengl.font.Font;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.atticuswhite.insaniquarium.GameFonts;
-import com.atticuswhite.insaniquarium.MainActivity;
+import com.atticuswhite.insaniquarium.GameActivity;
 
 public class ScoreManager {
-	private final VertexBufferObjectManager vertexBufferObjectManager;
 	private final Text scoreText;
-	private Entity entity;
 	private int score = 0;
 	
-	public ScoreManager(GameFonts font, final VertexBufferObjectManager vertexBufferObjectManager){
-		this.vertexBufferObjectManager = vertexBufferObjectManager;
-		this.entity = new Entity();
-		this.scoreText = new Text(MainActivity.CAMERA_WIDTH - 100, 5, font.getLargeFont(), "$0", "$XXX".length(), vertexBufferObjectManager);;
-		
+	public ScoreManager(){
+		this.scoreText = new Text(GameActivity.CAMERA_WIDTH - 100, 5, GameActivity.getInstance().getGameFonts().getLargeFont(), "$0", "$XXX".length(), GameActivity.getInstance().getVertexBufferObjectManager());
 	}
 	
 	public void updateScore(int score){

@@ -1,13 +1,11 @@
 package com.atticuswhite.insaniquarium.entities;
 
-import org.andengine.engine.handler.physics.PhysicsHandler;
-import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.text.Text;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
-import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
+import com.atticuswhite.insaniquarium.GameBitmapFactory;
 import com.atticuswhite.insaniquarium.GameFonts;
-import com.atticuswhite.insaniquarium.MainActivity;
+import com.atticuswhite.insaniquarium.GameActivity;
 
 public class Monster extends AggressiveEntity {
 
@@ -16,12 +14,13 @@ public class Monster extends AggressiveEntity {
 	private Integer health = MAX_HEALTH;
 	
 	
-	public Monster(final float pX, final float pY, GameFonts font, final TiledTextureRegion pTextureRegion, final VertexBufferObjectManager pVertexBufferObjectManager){
-		super(pX, pY, pTextureRegion, pVertexBufferObjectManager);
+	public Monster(final float pX, final float pY){
+		super(pX, pY, GameBitmapFactory.getTriangleFace());
+		GameFonts font = GameActivity.getInstance().getGameFonts();
 		this.velocityX = 120.f;
 		this.velocityY = 80.0f;
 		this.mPhysicsHandler.setVelocity(this.velocityX, this.velocityY);
-		this.healthText = new Text(4, 5, font.getMediumFont(), MAX_HEALTH.toString(), MAX_HEALTH.toString().length(), pVertexBufferObjectManager);
+		this.healthText = new Text(4, 5, font.getMediumFont(), MAX_HEALTH.toString(), MAX_HEALTH.toString().length(), GameActivity.getInstance().getVertexBufferObjectManager());
 		this.healthText.setColor(1,0,0);
 		this.attachChild(this.healthText);
 		

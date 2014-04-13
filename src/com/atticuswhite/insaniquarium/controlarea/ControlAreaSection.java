@@ -3,10 +3,12 @@ package com.atticuswhite.insaniquarium.controlarea;
 import org.andengine.entity.Entity;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.ITouchArea;
+import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.text.Text;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
+import com.atticuswhite.insaniquarium.GameActivity;
 import com.atticuswhite.insaniquarium.GameEventManager;
 import com.atticuswhite.insaniquarium.GameFonts;
 
@@ -15,8 +17,6 @@ public class ControlAreaSection extends Entity {
 	static final float HEIGHT = 65.0f;
 	static final float TOP = 10.0f;
 	
-	
-	private final VertexBufferObjectManager mVertexBufferObjectManager;
 	private final String name;
 	private final GameEventManager mGameEventManager;
 	
@@ -24,10 +24,14 @@ public class ControlAreaSection extends Entity {
 	
 	
 	
-	public ControlAreaSection (String name, float pX, GameEventManager gameEventManager, GameFonts font, VertexBufferObjectManager mVertexBufferObjectManager){
-		this.mVertexBufferObjectManager = mVertexBufferObjectManager;
+	public ControlAreaSection (String name, float pX, GameEventManager gameEventManager){
 		this.name = name;
 		this.mGameEventManager = gameEventManager;
+		
+		
+		VertexBufferObjectManager mVertexBufferObjectManager = GameActivity.getInstance().getVertexBufferObjectManager();
+		GameFonts font = GameActivity.getInstance().getGameFonts();
+		
 		
 		
 		this.background = new ControlTouchArea(this, 0, 0, WIDTH, HEIGHT, mVertexBufferObjectManager);
@@ -36,13 +40,7 @@ public class ControlAreaSection extends Entity {
 		
 		String costText = "$50";
 		Text cost = new Text(35, 50, font.getSmallFont(), costText, costText.length(), mVertexBufferObjectManager);
-		cost.setColor(0, 0, 0);
-		
-		
-		
-		
-		
-		
+		cost.setColor(0, 0, 0);	
 		
 		
 		this.attachChild(background);

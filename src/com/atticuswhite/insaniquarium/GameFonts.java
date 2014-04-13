@@ -13,7 +13,8 @@ public class GameFonts {
 	private Font small;
 	
 	
-	public GameFonts(BaseGameActivity activity){
+	public GameFonts(){
+		BaseGameActivity activity = GameActivity.getInstance();
 		FontFactory.setAssetBasePath("font/");
 		this.large = FontFactory.createFromAsset(activity.getFontManager(), activity.getTextureManager(), 512, 512, TextureOptions.BILINEAR, activity.getAssets(), "Droid.ttf", 32, true, Color.WHITE);
 		this.medium = FontFactory.createFromAsset(activity.getFontManager(), activity.getTextureManager(), 512, 512, TextureOptions.BILINEAR, activity.getAssets(), "Droid.ttf", 22, true, Color.WHITE);
